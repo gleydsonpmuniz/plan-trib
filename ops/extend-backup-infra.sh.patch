@@ -1,0 +1,22 @@
+#!/bin/bash
+# PATCH para /usr/local/bin/backup-infra.sh — estender p/ incluir plan-trib
+#
+# Aplicar manualmente na VPS Safion: copiar os trechos abaixo dentro do script
+# existente, antes da etapa de tar/compactação.
+#
+# ─── DUMP do plan-trib-db ───────────────────────────────────────────────────
+# (adicione perto dos outros pg_dumps no script)
+echo "[backup] dump plan-trib-db"
+docker exec plan-trib-db pg_dump -U "${PLAN_TRIB_DB_USER:-plan_trib}" plan_trib \
+    > "${WORK_DIR}/plan-trib-db.sql"
+
+# ─── COPIA do volume de uploads ─────────────────────────────────────────────
+echo "[backup] copia volume plan_trib_uploads"
+docker run --rm \
+    -v plan_trib_uploads:/source:ro \
+    -v "${WORK_DIR}":/dest \
+    alpine sh -c 'cp -a /source/. /dest/plan-trib-uploads/' 2>/dev/null || \
+    mkdir -p "${WORK_DIR}/plan-trib-uploads"
+
+# ─── (No tar final, certifique-se que /plan-trib-db.sql e /plan-trib-uploads/
+# ─── estão dentro de WORK_DIR antes do tar.zst e do rclone para Google Drive)

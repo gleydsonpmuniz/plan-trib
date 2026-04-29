@@ -1,0 +1,45 @@
+name: Deploy to VPS Safion
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag da imagem (default: latest)"
+        required: false
+        default: "latest"
+  workflow_run:
+    workflows: ["Build & Push Images"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 31.97.253.130 >> ~/.ssh/known_hosts
+      - name: Sync compose + ops + kb
+        run: |
+          rsync -avz --delete \
+            docker-compose.yml \
+            ops/ \
+            kb/ \
+            root@31.97.253.130:/opt/plan-trib/
+      - name: Pull images and restart
+        env:
+          TAG: ${{ github.event.inputs.tag || 'latest' }}
+        run: |
+          ssh root@31.97.253.130 << EOF
+            cd /opt/plan-trib
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            export TAG=${TAG}
+            export GITHUB_USER=${{ github.repository_owner }}
+            docker compose pull
+            docker compose up -d
+            docker compose run --rm plan-trib-backend alembic upgrade head
+          EOF

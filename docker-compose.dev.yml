@@ -1,0 +1,48 @@
+# Override de DEV (WSL local). Sobe sem Traefik — expõe portas direto no host.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  plan-trib-backend:
+    image: plan-trib-backend:dev
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./migrations:/app/migrations
+      - ./kb:/app/kb:ro
+      - plan_trib_uploads:/uploads
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - default
+
+  plan-trib-web:
+    image: plan-trib-web:dev
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - /app/.next
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - default
+
+  plan-trib-db:
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - default
+
+networks:
+  default:
+  root_backend:
+    external: false

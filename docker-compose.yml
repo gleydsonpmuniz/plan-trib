@@ -1,0 +1,94 @@
+# Produção — VPS Safion (/opt/plan-trib/docker-compose.yml)
+# Coexiste com /opt/safion-stack/docker-compose.yml (Nextcloud/n8n/Evolution).
+# Compartilha APENAS: network root_backend (necessária p/ Traefik).
+
+services:
+  plan-trib-backend:
+    image: ghcr.io/${GITHUB_USER}/plan-trib-backend:${TAG:-latest}
+    container_name: plan-trib-backend
+    restart: always
+    env_file: .env
+    environment:
+      - TZ=America/Sao_Paulo
+    volumes:
+      - plan_trib_uploads:/uploads
+      - ./kb:/app/kb:ro
+    depends_on:
+      - plan-trib-db
+    networks:
+      - root_backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_backend"
+      - "traefik.http.routers.plan-trib-api.rule=Host(`plantrib.safion.com.br`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.plan-trib-api.entrypoints=websecure"
+      - "traefik.http.routers.plan-trib-api.tls=true"
+      - "traefik.http.routers.plan-trib-api.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.plan-trib-api.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.plan-trib-ratelimit.ratelimit.average=10"
+      - "traefik.http.middlewares.plan-trib-ratelimit.ratelimit.burst=20"
+
+  plan-trib-web:
+    image: ghcr.io/${GITHUB_USER}/plan-trib-web:${TAG:-latest}
+    container_name: plan-trib-web
+    restart: always
+    env_file: .env.web
+    environment:
+      - TZ=America/Sao_Paulo
+    networks:
+      - root_backend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_backend"
+      - "traefik.http.routers.plan-trib-web.rule=Host(`plantrib.safion.com.br`)"
+      - "traefik.http.routers.plan-trib-web.entrypoints=websecure"
+      - "traefik.http.routers.plan-trib-web.tls=true"
+      - "traefik.http.routers.plan-trib-web.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.plan-trib-web.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.plan-trib-headers.headers.STSSeconds=315360000"
+      - "traefik.http.middlewares.plan-trib-headers.headers.browserXSSFilter=true"
+      - "traefik.http.middlewares.plan-trib-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.plan-trib-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.plan-trib-headers.headers.SSLRedirect=true"
+      - "traefik.http.middlewares.plan-trib-headers.headers.STSIncludeSubdomains=true"
+      - "traefik.http.middlewares.plan-trib-headers.headers.STSPreload=true"
+      - "traefik.http.middlewares.plan-trib-headers.headers.referrerPolicy=no-referrer"
+      - "traefik.http.routers.plan-trib-web.middlewares=plan-trib-headers"
+
+  plan-trib-db:
+    image: postgres:16
+    container_name: plan-trib-db
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=plan_trib
+      - POSTGRES_INITDB_ARGS=--data-checksums
+      - TZ=America/Sao_Paulo
+    volumes:
+      - plan_trib_pgdata:/var/lib/postgresql/data
+    networks:
+      - root_backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+
+volumes:
+  plan_trib_pgdata:
+  plan_trib_uploads:
+
+networks:
+  root_backend:
+    external: true

@@ -1,0 +1,245 @@
+services:
+  traefik:
+    image: "traefik:v3.0"
+    restart: always
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.watch=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - traefik_data:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - root_backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_backend"
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: always
+    ports:
+      - "127.0.0.1:5678:5678"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.n8n.tls=true"
+      - "traefik.http.routers.n8n.entrypoints=web,websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=mytlschallenge"
+      - "traefik.http.middlewares.n8n.headers.SSLRedirect=true"
+      - "traefik.http.middlewares.n8n.headers.STSSeconds=315360000"
+      - "traefik.http.middlewares.n8n.headers.browserXSSFilter=true"
+      - "traefik.http.middlewares.n8n.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.n8n.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.n8n.headers.SSLHost=${DOMAIN_NAME}"
+      - "traefik.http.middlewares.n8n.headers.STSIncludeSubdomains=true"
+      - "traefik.http.middlewares.n8n.headers.STSPreload=true"
+      - "traefik.http.routers.n8n.middlewares=n8n@docker"
+    environment:
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - TZ=America/Sao_Paulo
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - /local-files:/files
+    networks:
+      - root_backend
+
+  postgres:
+    image: postgres:16
+    container_name: postgres_evolution
+    restart: always
+    environment:
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=dkxxxxxxxxxxxxxx9
+      - POSTGRES_DB=evolution
+      # Opcional: checagens e preparação pro futuro
+      - POSTGRES_INITDB_ARGS=--data-checksums
+      - TZ=America/Sao_Paulo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - root_backend
+
+  redis:
+    image: redis:latest
+    restart: always
+    # Porta não exposta – acesso só pela rede interna
+    networks:
+      - root_backend
+
+  evolution_api:
+    container_name: evolution_api
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - evolution_store:/evolution/store
+      - evolution_instances:/evolution/instances
+    depends_on:
+      - postgres
+      - redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evolution.rule=Host(`${EVOLUTION_SUBDOMAIN}.${EVOLUTION_DOMAIN_NAME}`)"
+      - "traefik.http.routers.evolution.entrypoints=websecure"
+      - "traefik.http.routers.evolution.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.evolution.loadbalancer.server.port=8080"
+    environment:
+      - CONFIG_SESSION_PHONE_VERSION=${EVOLUTION_WHATSAPP_WEB_VERSION}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - root_backend
+
+  nextcloud:
+    image: nextcloud:29
+    container_name: nextcloud-app
+    restart: always
+    depends_on:
+      - nextcloud-db
+      - nextcloud-redis
+    environment:
+      - POSTGRES_HOST=nextcloud-db
+      - POSTGRES_PASSWORD=DBSxxxxxxx@
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - REDIS_HOST=nextcloud-redis
+      - REDIS_HOST_PASSWORD=Rexxxxxxxx@
+      - OVERWRITEPROTOCOL=https
+      - OVERWRITEHOST=cloud.safion.com.br
+      - OVERWRITECLIURL=https://cloud.safion.com.br
+      - PHP_MEMORY_LIMIT=1024M
+      - PHP_UPLOAD_LIMIT=1024M
+      - TZ=America/Sao_Paulo
+    volumes:
+      # ⚠ Se já tem dados em produção, planeje migração antes de alterar
+      - nextcloud_main:/var/www/html
+      - nextcloud_apps:/var/www/html/custom_apps
+      - nextcloud_config:/var/www/html/config
+      - nextcloud_data:/var/www/html/data
+    networks:
+      - root_backend
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "root_backend"
+
+      traefik.http.routers.nextcloud.rule: "Host(`cloud.safion.com.br`)"
+      traefik.http.routers.nextcloud.entrypoints: "websecure"
+      traefik.http.routers.nextcloud.tls: "true"
+      traefik.http.routers.nextcloud.tls.certresolver: "mytlschallenge"
+      traefik.http.services.nextcloud.loadbalancer.server.port: "80"
+
+      # HSTS + cabeçalhos de segurança
+      traefik.http.middlewares.nextcloud-headers.headers.forceSTSHeader: "true"
+      traefik.http.middlewares.nextcloud-headers.headers.STSSeconds: "15xxxxxx00"
+      traefik.http.middlewares.nextcloud-headers.headers.STSIncludeSubdomains: "true"
+      traefik.http.middlewares.nextcloud-headers.headers.STSPreload: "true"
+      traefik.http.middlewares.nextcloud-headers.headers.browserXSSFilter: "true"
+      traefik.http.middlewares.nextcloud-headers.headers.contentTypeNosniff: "true"
+      traefik.http.middlewares.nextcloud-headers.headers.referrerPolicy: "no-referrer"
+
+      # Redireciono CalDAV/CardDAV -> /remote.php/dav
+      traefik.http.middlewares.nextcloud-dav.redirectregex.regex: "^/.well-known/(card|cal)dav$"
+      traefik.http.middlewares.nextcloud-dav.redirectregex.replacement: "/remote.php/dav"
+      traefik.http.middlewares.nextcloud-dav.redirectregex.permanent: "true"
+
+      # Garante cabeçalhos corretos do proxy
+      traefik.http.middlewares.sslheader.headers.customRequestHeaders.X-Forwarded-Proto: "https"
+      traefik.http.middlewares.sslheader.headers.customRequestHeaders.X-Forwarded-For: "{client_ip}"
+      traefik.http.middlewares.sslheader.headers.customRequestHeaders.X-Forwarded-Host: "cloud.safion.com.br"
+
+      # Compressão (melhora bastante a performance)
+      traefik.http.middlewares.nextcloud-compress.compress: "true"
+
+      # Redireciono Webfinger -> obrigatório
+      traefik.http.middlewares.nextcloud-webfinger.redirectregex.regex: "^/.well-known/webfinger$"
+      traefik.http.middlewares.nextcloud-webfinger.redirectregex.replacement: "/index.php/.well-known/webfinger"
+      traefik.http.middlewares.nextcloud-webfinger.redirectregex.permanent: "true"
+
+      # Redireciono Nodeinfo -> obrigatório
+      traefik.http.middlewares.nextcloud-nodeinfo.redirectregex.regex: "^/.well-known/nodeinfo$"
+      traefik.http.middlewares.nextcloud-nodeinfo.redirectregex.replacement: "/index.php/.well-known/nodeinfo"
+      traefik.http.middlewares.nextcloud-nodeinfo.redirectregex.permanent: "true"
+
+      # Redireciono OCM Provider -> obrigatório
+      traefik.http.middlewares.nextcloud-ocm.redirectregex.regex: "^/ocm-provider/?$"
+      traefik.http.middlewares.nextcloud-ocm.redirectregex.replacement: "/ocs-provider/"
+      traefik.http.middlewares.nextcloud-ocm.redirectregex.permanent: "true"
+
+      # Adiciono todos os middlewares ao router Nextcloud
+      traefik.http.routers.nextcloud.middlewares: "sslheader,nextcloud-headers,nextcloud-dav,nextcloud-compress,nextcloud-webfinger,nextcloud-nodeinfo,nextcloud-ocm"
+
+  nextcloud-cron:
+    image: nextcloud:29
+    container_name: nextcloud-cron
+    restart: always
+    depends_on:
+      - nextcloud-db
+    volumes:
+      - nextcloud_main:/var/www/html
+      - nextcloud_apps:/var/www/html/custom_apps
+      - nextcloud_config:/var/www/html/config
+      - nextcloud_data:/var/www/html/data
+    entrypoint: /cron.sh
+    networks:
+      - root_backend
+
+  nextcloud-db:
+    image: postgres:16
+    container_name: nextcloud-db
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=DBxxxxxxx@
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_INITDB_ARGS=--data-checksums
+      - TZ=America/Sao_Paulo
+    volumes:
+      - nextcloud_db:/var/lib/postgresql/data
+    networks:
+      - root_backend
+
+  nextcloud-redis:
+    image: redis:latest
+    container_name: nextcloud-redis
+    restart: always
+    command: ["redis-server", "--requirepass", "Rxxxxxxxxx3@"]
+    volumes:
+      - nextcloud_redis:/data
+    networks:
+      - root_backend
+
+volumes:
+  traefik_data:
+    external: true
+  n8n_data:
+    external: true
+  evolution_store:
+  evolution_instances:
+  pgdata:
+  nextcloud_main:
+  nextcloud_apps:
+  nextcloud_config:
+  nextcloud_data:
+  nextcloud_db:
+  nextcloud_redis:
+
+networks:
+  root_backend:
+    external: true

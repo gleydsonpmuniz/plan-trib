@@ -1,0 +1,148 @@
+# Tabelas dos Anexos do Simples Nacional
+# Base legal: LC 123/2006 alterada pela LC 155/2016 (vigência desde 01/01/2018)
+# Fonte oficial: http://www.planalto.gov.br/ccivil_03/leis/lcp/lcp123.htm
+# MCP Validated: 2026-04-28
+
+metadata:
+  source: "Lei Complementar 155/2016 (alterações na LC 123/2006)"
+  vigencia_inicio: "2018-01-01"
+  ultima_revisao: "2026-04-28"
+  observacao: |
+    Os valores de Receita Bruta de cada faixa (em R$) e as alíquotas nominais
+    e parcelas a deduzir (PD) estão vigentes desde 2018. A Reforma Tributária
+    (LC 214/2025) prevê transição gradual, mas o Simples Nacional permanece
+    com tabelas próprias na fase inicial.
+
+# ─────────────────────────────── ANEXO I ───────────────────────────────
+# Comércio (revenda de mercadorias)
+# Tributos incluídos: IRPJ, CSLL, COFINS, PIS, INSS/CPP, ICMS
+
+anexo_I:
+  descricao: "Comércio (revenda)"
+  atividades_exemplo:
+    - "Revenda de mercadorias, exceto para o exterior"
+  faixas:
+    - faixa: 1
+      receita_min: 0.00
+      receita_max: 180000.00
+      aliquota_nominal: 0.0400
+      parcela_deduzir: 0.00
+    - faixa: 2
+      receita_min: 180000.01
+      receita_max: 360000.00
+      aliquota_nominal: 0.0730
+      parcela_deduzir: 5940.00
+    - faixa: 3
+      receita_min: 360000.01
+      receita_max: 720000.00
+      aliquota_nominal: 0.0950
+      parcela_deduzir: 13860.00
+    - faixa: 4
+      receita_min: 720000.01
+      receita_max: 1800000.00
+      aliquota_nominal: 0.1070
+      parcela_deduzir: 22500.00
+    - faixa: 5
+      receita_min: 1800000.01
+      receita_max: 3600000.00
+      aliquota_nominal: 0.1430
+      parcela_deduzir: 87300.00
+    - faixa: 6
+      receita_min: 3600000.01
+      receita_max: 4800000.00
+      aliquota_nominal: 0.1900
+      parcela_deduzir: 378000.00
+  reparticao_por_faixa:
+    # % de cada tributo dentro do total da alíquota efetiva
+    # Faixa 1 (exemplo)
+    1: { irpj: 0.055, csll: 0.035, cofins: 0.1274, pis: 0.0276, cpp: 0.415, icms: 0.34 }
+    2: { irpj: 0.055, csll: 0.035, cofins: 0.1274, pis: 0.0276, cpp: 0.415, icms: 0.34 }
+    3: { irpj: 0.055, csll: 0.035, cofins: 0.1274, pis: 0.0276, cpp: 0.415, icms: 0.335 }
+    4: { irpj: 0.055, csll: 0.035, cofins: 0.1274, pis: 0.0276, cpp: 0.42,  icms: 0.335 }
+    5: { irpj: 0.055, csll: 0.035, cofins: 0.1274, pis: 0.0276, cpp: 0.42,  icms: 0.335 }
+    6: { irpj: 0.135, csll: 0.10,  cofins: 0.2895, pis: 0.0625, cpp: 0.4250, icms: null }
+    # Faixa 6: sem ICMS no DAS (sublimite ultrapassado)
+
+# ─────────────────────────────── ANEXO II ───────────────────────────────
+# Indústria (venda de mercadorias industrializadas pelo contribuinte)
+# Tributos incluídos: I + IPI
+
+anexo_II:
+  descricao: "Indústria"
+  atividades_exemplo:
+    - "Venda de mercadorias industrializadas pelo contribuinte"
+  faixas:
+    - { faixa: 1, receita_min: 0.00,        receita_max: 180000.00,   aliquota_nominal: 0.0450, parcela_deduzir: 0.00 }
+    - { faixa: 2, receita_min: 180000.01,   receita_max: 360000.00,   aliquota_nominal: 0.0780, parcela_deduzir: 5940.00 }
+    - { faixa: 3, receita_min: 360000.01,   receita_max: 720000.00,   aliquota_nominal: 0.1000, parcela_deduzir: 13860.00 }
+    - { faixa: 4, receita_min: 720000.01,   receita_max: 1800000.00,  aliquota_nominal: 0.1120, parcela_deduzir: 22500.00 }
+    - { faixa: 5, receita_min: 1800000.01,  receita_max: 3600000.00,  aliquota_nominal: 0.1470, parcela_deduzir: 85500.00 }
+    - { faixa: 6, receita_min: 3600000.01,  receita_max: 4800000.00,  aliquota_nominal: 0.3000, parcela_deduzir: 720000.00 }
+
+# ─────────────────────────────── ANEXO III ───────────────────────────────
+# Serviços (locação de bens móveis, agências, etc.) e serviços com Fator R >= 28%
+
+anexo_III:
+  descricao: "Serviços (locação, agência) e serviços com Fator R >= 28%"
+  atividades_exemplo:
+    - "Locação de bens móveis"
+    - "Serviços de instalação, reparo, manutenção"
+    - "Agências de viagem"
+    - "Profissões intelectuais (com Fator R >= 28%)"
+  faixas:
+    - { faixa: 1, receita_min: 0.00,        receita_max: 180000.00,   aliquota_nominal: 0.0600, parcela_deduzir: 0.00 }
+    - { faixa: 2, receita_min: 180000.01,   receita_max: 360000.00,   aliquota_nominal: 0.1120, parcela_deduzir: 9360.00 }
+    - { faixa: 3, receita_min: 360000.01,   receita_max: 720000.00,   aliquota_nominal: 0.1350, parcela_deduzir: 17640.00 }
+    - { faixa: 4, receita_min: 720000.01,   receita_max: 1800000.00,  aliquota_nominal: 0.1600, parcela_deduzir: 35640.00 }
+    - { faixa: 5, receita_min: 1800000.01,  receita_max: 3600000.00,  aliquota_nominal: 0.2100, parcela_deduzir: 125640.00 }
+    - { faixa: 6, receita_min: 3600000.01,  receita_max: 4800000.00,  aliquota_nominal: 0.3300, parcela_deduzir: 648000.00 }
+
+# ─────────────────────────────── ANEXO IV ───────────────────────────────
+# Serviços com cessão de mão de obra; INSS recolhido por fora do DAS
+
+anexo_IV:
+  descricao: "Serviços de construção, vigilância, limpeza, conservação"
+  observacao: "INSS Patronal NÃO incluso no DAS — recolhe à parte (20% + RAT + terceiros)"
+  atividades_exemplo:
+    - "Construção de imóveis e obras de engenharia"
+    - "Vigilância, limpeza e conservação"
+    - "Serviços advocatícios"
+  faixas:
+    - { faixa: 1, receita_min: 0.00,        receita_max: 180000.00,   aliquota_nominal: 0.0450, parcela_deduzir: 0.00 }
+    - { faixa: 2, receita_min: 180000.01,   receita_max: 360000.00,   aliquota_nominal: 0.0900, parcela_deduzir: 8100.00 }
+    - { faixa: 3, receita_min: 360000.01,   receita_max: 720000.00,   aliquota_nominal: 0.1020, parcela_deduzir: 12420.00 }
+    - { faixa: 4, receita_min: 720000.01,   receita_max: 1800000.00,  aliquota_nominal: 0.1400, parcela_deduzir: 39780.00 }
+    - { faixa: 5, receita_min: 1800000.01,  receita_max: 3600000.00,  aliquota_nominal: 0.2200, parcela_deduzir: 183780.00 }
+    - { faixa: 6, receita_min: 3600000.01,  receita_max: 4800000.00,  aliquota_nominal: 0.3300, parcela_deduzir: 828000.00 }
+
+# ─────────────────────────────── ANEXO V ───────────────────────────────
+# Serviços com Fator R < 28% (alíquotas mais altas)
+
+anexo_V:
+  descricao: "Serviços com Fator R < 28%"
+  atividades_exemplo:
+    - "Engenharia, arquitetura, medicina, odontologia (quando Fator R < 28%)"
+    - "Auditoria, consultoria, jornalismo (Fator R < 28%)"
+  faixas:
+    - { faixa: 1, receita_min: 0.00,        receita_max: 180000.00,   aliquota_nominal: 0.1550, parcela_deduzir: 0.00 }
+    - { faixa: 2, receita_min: 180000.01,   receita_max: 360000.00,   aliquota_nominal: 0.1800, parcela_deduzir: 4500.00 }
+    - { faixa: 3, receita_min: 360000.01,   receita_max: 720000.00,   aliquota_nominal: 0.1950, parcela_deduzir: 9900.00 }
+    - { faixa: 4, receita_min: 720000.01,   receita_max: 1800000.00,  aliquota_nominal: 0.2050, parcela_deduzir: 17100.00 }
+    - { faixa: 5, receita_min: 1800000.01,  receita_max: 3600000.00,  aliquota_nominal: 0.2300, parcela_deduzir: 62100.00 }
+    - { faixa: 6, receita_min: 3600000.01,  receita_max: 4800000.00,  aliquota_nominal: 0.3050, parcela_deduzir: 540000.00 }
+
+# ─────────────────────────────── FATOR R ───────────────────────────────
+fator_r:
+  formula: "(folha_12m + pro_labore_12m) / receita_bruta_12m"
+  threshold: 0.28
+  resultado_se_maior_ou_igual: "anexo_III"
+  resultado_se_menor: "anexo_V"
+
+# ─────────────────────────────── SUBLIMITES ───────────────────────────────
+sublimites:
+  federal:
+    valor: 4800000.00
+    consequencia: "Exclusão do Simples"
+  estadual_icms_iss:
+    valor: 3600000.00
+    consequencia: "Recolhe ICMS/ISS por fora; demais tributos seguem no DAS"

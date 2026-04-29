@@ -1,0 +1,122 @@
+# Versões dos Leiautes SPED
+# Fonte oficial: http://sped.rfb.gov.br/
+# MCP Validated: 2026-04-28
+
+metadata:
+  source: "Receita Federal do Brasil — http://sped.rfb.gov.br/"
+  ultima_revisao: "2026-04-28"
+  observacao: |
+    A RFB publica novos leiautes anualmente (geralmente Dez/Jan, vigência a
+    partir de Jan do ano-calendário). O parser deve detectar a versão pelo
+    campo `cod_ver` do registro 0000 e aplicar o registry adequado.
+
+# ─────────────── EFD ICMS/IPI (SPED Fiscal) ───────────────
+efd_icms_ipi:
+  nome: "Escrituração Fiscal Digital ICMS IPI"
+  url_oficial: "http://sped.rfb.gov.br/projeto/show/1"
+  manual_oficial: "http://sped.rfb.gov.br/pasta/show/1573"
+  encoding: "ISO-8859-1"
+  separador_campo: "|"
+  certificado_digital: "ICP-Brasil ao final do arquivo"
+  versoes:
+    - cod_ver: "019"
+      vigencia_inicio: "2024-01-01"
+      vigencia_fim: null
+      observacao: "Leiaute vigente em 2026"
+    - cod_ver: "018"
+      vigencia_inicio: "2023-01-01"
+      vigencia_fim: "2023-12-31"
+    - cod_ver: "017"
+      vigencia_inicio: "2022-01-01"
+      vigencia_fim: "2022-12-31"
+    - cod_ver: "016"
+      vigencia_inicio: "2021-01-01"
+      vigencia_fim: "2021-12-31"
+  blocos:
+    - { codigo: "0", nome: "Abertura, Identificação e Referências", obrigatorio: true }
+    - { codigo: "B", nome: "Escrituração e Apuração do ISS (DF)", obrigatorio: false }
+    - { codigo: "C", nome: "Documentos Fiscais I — Mercadorias", obrigatorio: true }
+    - { codigo: "D", nome: "Documentos Fiscais II — Serviços", obrigatorio: false }
+    - { codigo: "E", nome: "Apuração do ICMS e IPI", obrigatorio: true }
+    - { codigo: "G", nome: "CIAP", obrigatorio: false }
+    - { codigo: "H", nome: "Inventário", obrigatorio: true }
+    - { codigo: "K", nome: "Controle de Produção e Estoque", obrigatorio: false }
+    - { codigo: "1", nome: "Outras Informações", obrigatorio: false }
+    - { codigo: "9", nome: "Controle e Encerramento", obrigatorio: true }
+  registros_chave:
+    - { reg: "0000", descricao: "Identificação", quantidade_arquivo: "1" }
+    - { reg: "C100", descricao: "Documento fiscal (capa)", quantidade_arquivo: "n" }
+    - { reg: "C170", descricao: "Itens do documento fiscal", quantidade_arquivo: "n por C100" }
+    - { reg: "C190", descricao: "Análise consolidada CST/CFOP/alíquota", quantidade_arquivo: "n por C100" }
+    - { reg: "E110", descricao: "Apuração ICMS — período", quantidade_arquivo: "1 por período" }
+    - { reg: "H010", descricao: "Inventário por item", quantidade_arquivo: "n (anual)" }
+
+# ─────────────── EFD-Contribuições ───────────────
+efd_contribuicoes:
+  nome: "Escrituração Fiscal Digital das Contribuições"
+  url_oficial: "http://sped.rfb.gov.br/projeto/show/2"
+  manual_oficial: "http://sped.rfb.gov.br/pasta/show/1989"
+  encoding: "ISO-8859-1"
+  separador_campo: "|"
+  certificado_digital: "ICP-Brasil ao final do arquivo"
+  versoes:
+    - cod_ver: "006"
+      vigencia_inicio: "2024-01-01"
+      vigencia_fim: null
+      observacao: "Leiaute vigente em 2026"
+    - cod_ver: "005"
+      vigencia_inicio: "2020-04-01"
+      vigencia_fim: "2023-12-31"
+    - cod_ver: "004"
+      vigencia_inicio: "2018-01-01"
+      vigencia_fim: "2020-03-31"
+  blocos:
+    - { codigo: "0", nome: "Abertura, Identificação e Referências", obrigatorio: true }
+    - { codigo: "A", nome: "Documentos Fiscais — Serviços (NFS-e)", obrigatorio: false }
+    - { codigo: "C", nome: "Documentos Fiscais — Mercadorias", obrigatorio: false }
+    - { codigo: "D", nome: "Documentos Fiscais — Serviços de Transporte", obrigatorio: false }
+    - { codigo: "F", nome: "Demais Documentos e Operações", obrigatorio: false }
+    - { codigo: "I", nome: "Operações de Instituições Financeiras", obrigatorio: false }
+    - { codigo: "M", nome: "Apuração Consolidada PIS/COFINS", obrigatorio: true }
+    - { codigo: "P", nome: "Apuração CPRB (Desoneração)", obrigatorio: false }
+    - { codigo: "1", nome: "Controle e Ajustes", obrigatorio: false }
+    - { codigo: "9", nome: "Controle e Encerramento", obrigatorio: true }
+  registros_chave:
+    - { reg: "0000", descricao: "Identificação", quantidade_arquivo: "1" }
+    - { reg: "0110", descricao: "Indicador de Regime (cumul/não-cumul)", quantidade_arquivo: "1" }
+    - { reg: "0140", descricao: "Tabela de estabelecimentos", quantidade_arquivo: "n" }
+    - { reg: "F550", descricao: "Consolidação por CST/CFOP (regime cumulativo)", quantidade_arquivo: "n" }
+    - { reg: "M200", descricao: "Apuração consolidada PIS", quantidade_arquivo: "1" }
+    - { reg: "M600", descricao: "Apuração consolidada COFINS", quantidade_arquivo: "1" }
+
+# ─────────────── Outros SPEDs (referência futura) ───────────────
+sped_outros_referencia:
+  ecd:
+    nome: "Escrituração Contábil Digital"
+    url: "http://sped.rfb.gov.br/projeto/show/4"
+    no_escopo_mvp: false
+    observacao: "Removido do MVP por brainstorm — substituído por formulário sintético de despesas"
+  ecf:
+    nome: "Escrituração Contábil Fiscal"
+    url: "http://sped.rfb.gov.br/projeto/show/12"
+    no_escopo_mvp: false
+  esocial:
+    nome: "eSocial"
+    url: "https://www.gov.br/esocial/"
+    no_escopo_mvp: false
+    observacao: "Folha vem do PDF Resumo Mensal no MVP"
+  efd_reinf:
+    nome: "EFD-Reinf"
+    url: "http://sped.rfb.gov.br/projeto/show/29"
+    no_escopo_mvp: false
+
+# ─────────────── Bibliotecas Python para Parsing ───────────────
+libs_referencia:
+  python_sped:
+    repo: "https://github.com/sped-br/python-sped"
+    descricao: "Lib Python com leiautes pré-definidos dos SPEDs"
+    status: "Mantida pela comunidade — verificar última atualização"
+  sped_extractor:
+    pypi: "https://pypi.org/project/sped-extractor/"
+    descricao: "Extrai leiautes oficiais (PDFs RFB) → CSV/JSON"
+    uso: "Regenerar registries quando RFB publica nova versão"

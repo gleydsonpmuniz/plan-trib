@@ -1,0 +1,90 @@
+# Percentuais de Presunção — Lucro Presumido
+# Base legal: Lei 9.249/95, arts. 15 (IRPJ) e 20 (CSLL); IN RFB 1.700/2017
+# Fonte oficial: http://www.planalto.gov.br/ccivil_03/leis/l9249.htm
+# MCP Validated: 2026-04-28
+
+metadata:
+  source: "Lei 9.249/95, arts. 15 e 20"
+  vigencia_inicio: "1996-01-01"
+  ultima_revisao: "2026-04-28"
+  observacao: |
+    As alíquotas de IRPJ (15% + adicional 10%) e CSLL (9%) incidem sobre
+    a base presumida calculada pelos percentuais abaixo, aplicados sobre
+    a receita bruta trimestral (ou mensal por estimativa, se anual).
+
+# ─────────────── Adicional do IRPJ ───────────────
+adicional_irpj:
+  aliquota: 0.10
+  base_excedente_trimestral: 60000.00
+  base_excedente_mensal: 20000.00
+  observacao: |
+    Aplica-se sobre o que exceder R$ 60.000,00 no trimestre (R$ 20.000/mês
+    em estimativa), além da alíquota base de 15%.
+
+# ─────────────── Alíquotas Base ───────────────
+aliquotas_base:
+  irpj: 0.15
+  csll: 0.09
+
+# ─────────────── Percentuais de Presunção IRPJ (Art. 15) ───────────────
+presuncao_irpj:
+  - atividade: "Revenda de combustíveis e gás natural"
+    percentual: 0.016
+    cnae_referencia: ["46.81", "47.31"]
+  - atividade: "Comércio em geral; indústria; transporte de cargas"
+    percentual: 0.08
+    cnae_referencia: ["45.*", "46.*", "47.*", "10.*", "11.*", "12.*", "13.*", "14.*", "15.*", "16.*", "17.*", "18.*", "19.*", "20.*", "21.*", "22.*", "23.*", "24.*", "25.*", "26.*", "27.*", "28.*", "29.*", "30.*", "31.*", "32.*", "33.*", "49.*"]
+  - atividade: "Serviços hospitalares"
+    percentual: 0.08
+    cnae_referencia: ["86.*"]
+    condicao: "Conforme atividades essenciais ao serviço hospitalar (Resolução RDC 50/2002)"
+  - atividade: "Construção civil — empreitada total com fornecimento de materiais"
+    percentual: 0.08
+    cnae_referencia: ["41.*", "42.*"]
+  - atividade: "Transporte de passageiros"
+    percentual: 0.16
+    cnae_referencia: ["49.21", "49.22", "49.23", "49.24", "50.*", "51.*"]
+  - atividade: "Prestação de serviços em geral — receita anual até R$ 120.000"
+    percentual: 0.16
+    condicao: "Receita bruta anual ≤ R$ 120.000 (limite por atividade)"
+  - atividade: "Prestação de serviços em geral"
+    percentual: 0.32
+    cnae_referencia: ["62.*", "63.*", "69.*", "70.*", "71.*", "72.*", "73.*", "74.*", "78.*", "82.*"]
+  - atividade: "Intermediação de negócios; locação; cessão de direitos; administração"
+    percentual: 0.32
+  - atividade: "Construção civil — sem fornecimento de materiais (mão de obra)"
+    percentual: 0.32
+
+# ─────────────── Percentuais de Presunção CSLL (Art. 20) ───────────────
+presuncao_csll:
+  - atividade: "Comércio, indústria, transporte de cargas, atividades em geral"
+    percentual: 0.12
+  - atividade: "Prestação de serviços em geral; intermediação; locação; cessão de direitos"
+    percentual: 0.32
+
+# ─────────────── PIS/COFINS (Cumulativo) ───────────────
+pis_cofins_cumulativo:
+  pis:
+    aliquota: 0.0065
+    base: "Receita bruta com exclusões legais (incluindo ICMS destacado, RE 574.706/STF)"
+    creditos: false
+  cofins:
+    aliquota: 0.03
+    base: "Receita bruta com exclusões legais (incluindo ICMS destacado, RE 574.706/STF)"
+    creditos: false
+
+# ─────────────── Limite do Lucro Presumido ───────────────
+limite_anual:
+  valor: 78000000.00
+  legislacao: "Lei 12.814/2013"
+  observacao: "Empresas com receita > R$ 78M devem optar por Lucro Real"
+
+# ─────────────── Atividades Vedadas ao LP ───────────────
+atividades_vedadas:
+  - "Bancos e instituições financeiras"
+  - "Empresas de seguros privados e capitalização"
+  - "Empresas de previdência privada aberta"
+  - "Factoring"
+  - "Empresas que tenham lucros, rendimentos ou ganhos de capital oriundos do exterior"
+  - "Empresas que exerçam atividade de compra e venda, loteamento, incorporação ou construção de imóveis (em algumas situações)"
+referencia_vedacoes: "Lei 9.718/98, art. 14"
