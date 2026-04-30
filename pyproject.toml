@@ -52,6 +52,7 @@ ignore = [
     "UP042",  # str+enum.Enum precisa por compat SQLAlchemy SAEnum (StrEnum não funciona)
     "UP047",  # PEP 695 generic syntax — refactor cosmético
     "RUF022", # __all__ sorted — cosmético
+    "C408",   # dict() vs {} — preferência de estilo, ambos válidos
 ]
 
 [tool.pytest.ini_options]

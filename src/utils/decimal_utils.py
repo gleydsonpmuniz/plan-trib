@@ -1,5 +1,5 @@
-from decimal import Decimal, ROUND_HALF_EVEN
 from datetime import date
+from decimal import ROUND_HALF_EVEN, Decimal
 
 
 def parse_brl_decimal(s: str | None) -> Decimal | None:

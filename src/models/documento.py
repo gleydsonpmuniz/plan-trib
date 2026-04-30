@@ -1,8 +1,7 @@
 import enum
 
-from sqlalchemy import BigInteger
+from sqlalchemy import BigInteger, ForeignKey, String, Text
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, SoftDeleteMixin, TimestampMixin
