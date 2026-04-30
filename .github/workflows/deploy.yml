@@ -23,23 +23,45 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H 31.97.253.130 >> ~/.ssh/known_hosts
-      - name: Sync compose + ops + kb
+      - name: Sync compose, ops, kb (preserva .env)
         run: |
-          rsync -avz --delete \
-            docker-compose.yml \
-            ops/ \
-            kb/ \
-            root@31.97.253.130:/opt/plan-trib/
+          # Compose: substitui apenas o arquivo
+          rsync -avz docker-compose.yml root@31.97.253.130:/opt/plan-trib/docker-compose.yml
+          # ops/ e kb/: --delete só dentro das subpastas (não toca raiz)
+          rsync -avz --delete ops/ root@31.97.253.130:/opt/plan-trib/ops/
+          rsync -avz --delete kb/ root@31.97.253.130:/opt/plan-trib/kb/
       - name: Pull images and restart
         env:
           TAG: ${{ github.event.inputs.tag || 'latest' }}
         run: |
-          ssh root@31.97.253.130 << EOF
+          ssh root@31.97.253.130 "
+            set -e
             cd /opt/plan-trib
-            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Sanity check: .env precisa existir
+            if [ ! -f .env ]; then
+              echo '❌ /opt/plan-trib/.env não encontrado. Crie manualmente antes do deploy.'
+              exit 1
+            fi
+
+            # Login no GHCR
+            echo '${{ secrets.GHCR_PAT }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Export para o compose substituir variáveis
             export TAG=${TAG}
             export GITHUB_USER=${{ github.repository_owner }}
+
             docker compose pull
             docker compose up -d
+
+            # Aguarda DB ficar pronto antes de migrar
+            for i in 1 2 3 4 5; do
+              if docker exec plan-trib-db pg_isready -U \$(grep ^DB_USER .env | cut -d= -f2) >/dev/null 2>&1; then
+                break
+              fi
+              echo 'Aguardando DB...'
+              sleep 3
+            done
+
             docker compose run --rm plan-trib-backend alembic upgrade head
-          EOF
+          "
