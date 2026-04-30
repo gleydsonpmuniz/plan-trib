@@ -44,7 +44,7 @@ jobs:
               exit 1
             fi
 
-            # Login no GHCR
+            # Login no GHCR (imagens privadas)
             echo '${{ secrets.GHCR_PAT }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             # Export para o compose substituir variáveis
