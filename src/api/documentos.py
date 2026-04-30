@@ -1,5 +1,4 @@
 import hashlib
-import shutil
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile, status

@@ -46,7 +46,13 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "RUF"]
-ignore = ["E501"]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # FastAPI exige Depends/File/Body como default — falso positivo
+    "UP042",  # str+enum.Enum precisa por compat SQLAlchemy SAEnum (StrEnum não funciona)
+    "UP047",  # PEP 695 generic syntax — refactor cosmético
+    "RUF022", # __all__ sorted — cosmético
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
