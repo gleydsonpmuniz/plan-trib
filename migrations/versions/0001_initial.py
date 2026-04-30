@@ -43,8 +43,8 @@ def upgrade() -> None:
 
     tipo_emp = postgresql.ENUM("matriz", "filial", "independente", name="tipoempresa", create_type=True)
     regime = postgresql.ENUM("SIMPLES", "LP", "LR", name="regimetributario", create_type=True)
-    tipo_emp.create(op.get_bind())
-    regime.create(op.get_bind())
+    tipo_emp.create(op.get_bind(), checkfirst=True)
+    regime.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "empresa",
@@ -81,8 +81,8 @@ def upgrade() -> None:
         "PENDENTE", "PROCESSANDO", "PROCESSADO", "ERRO",
         name="statusdocumento", create_type=True,
     )
-    tipo_doc.create(op.get_bind())
-    status_doc.create(op.get_bind())
+    tipo_doc.create(op.get_bind(), checkfirst=True)
+    status_doc.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "documento",
