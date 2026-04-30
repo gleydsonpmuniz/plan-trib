@@ -41,8 +41,10 @@ def upgrade() -> None:
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
     )
 
-    tipo_emp = postgresql.ENUM("matriz", "filial", "independente", name="tipoempresa", create_type=True)
-    regime = postgresql.ENUM("SIMPLES", "LP", "LR", name="regimetributario", create_type=True)
+    # create_type=False: criamos explicitamente abaixo (idempotente).
+    # O op.create_table referencia esses ENUMs sem tentar recriá-los.
+    tipo_emp = postgresql.ENUM("matriz", "filial", "independente", name="tipoempresa", create_type=False)
+    regime = postgresql.ENUM("SIMPLES", "LP", "LR", name="regimetributario", create_type=False)
     tipo_emp.create(op.get_bind(), checkfirst=True)
     regime.create(op.get_bind(), checkfirst=True)
 
@@ -75,11 +77,11 @@ def upgrade() -> None:
 
     tipo_doc = postgresql.ENUM(
         "SPED_FISCAL", "SPED_CONTRIBUICOES", "PDF_FOLHA", "PDF_PGDAS",
-        name="tipodocumento", create_type=True,
+        name="tipodocumento", create_type=False,
     )
     status_doc = postgresql.ENUM(
         "PENDENTE", "PROCESSANDO", "PROCESSADO", "ERRO",
-        name="statusdocumento", create_type=True,
+        name="statusdocumento", create_type=False,
     )
     tipo_doc.create(op.get_bind(), checkfirst=True)
     status_doc.create(op.get_bind(), checkfirst=True)
